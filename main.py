@@ -3,7 +3,7 @@ import streamlit as st
 # 🌟 1. 화려한 페이지 설정 🌟
 st.set_page_config(page_title="MBTI 진로 탐험대", page_icon="🧭", layout="centered")
 
-# 🌈 2. MBTI별 성격 특징 및 추천 직업 데이터 (이전과 동일) 🌈
+# 🌈 2. MBTI별 성격 특징 및 추천 직업 데이터 🌈
 mbti_data = {
     "INTJ": {"title": "👑 용의주도한 전략가", "traits": "논리적이고 객관적이며, 전체적인 상황을 파악하는 통찰력이 뛰어납니다. 🧠✨", "jobs": [{"name": "🔬 과학자", "reason": "복잡한 현상을 논리적으로 분석하는 데 탁월합니다."}, {"name": "💻 소프트웨어 아키텍트", "reason": "거시적인 안목으로 시스템 구조를 설계하는 것을 즐깁니다."}, {"name": "♟️ 경영 전략 기획자", "reason": "미래를 예측하고 장기적인 비전을 세우는 일에 적합합니다."}]},
     "INTP": {"title": "💡 논리적인 사색가", "traits": "지적 호기심이 매우 강하고, 분석적이고 논리적인 사고를 즐깁니다. 🔍📚", "jobs": [{"name": "📊 데이터 분석가", "reason": "방대한 데이터 속에서 패턴을 찾고 논리적 결론을 도출합니다."}, {"name": "📐 건축가", "reason": "공간을 논리적이고 체계적으로 설계하는 것을 좋아합니다."}, {"name": "🧠 철학자 / 연구원", "reason": "근원적인 진리를 탐구하고 아이디어를 발전시킵니다."}]},
@@ -25,13 +25,10 @@ mbti_data = {
 
 mbti_types = list(mbti_data.keys())
 
-# 🔄 3. 스마트한 세션 상태(Session State) 관리 🔄
-if 'mbti_index' not in st.session_state:
-    st.session_state.mbti_index = 0 # 처음 시작할 때 0번(INTJ)으로 설정
-
-# 드롭다운에서 직접 선택했을 때 인덱스를 맞춰주는 콜백 함수
-def sync_index():
-    st.session_state.mbti_index = mbti_types.index(st.session_state.mbti_selector)
+# 🔄 3. 아주 심플하고 확실한 세션 상태(Session State) 관리 🔄
+# 처음 시작할 때 드롭다운 위젯의 Key 자체를 "INTJ"로 콕 집어 고정해둡니다.
+if 'mbti_selector' not in st.session_state:
+    st.session_state.mbti_selector = mbti_types[0]
 
 
 # 🎈 4. 화면 레이아웃 구성 🎈
@@ -41,28 +38,27 @@ st.divider()
 
 st.write("### 👇 버튼을 누르거나 목록에서 직접 골라보세요! 👇")
 
-# 🎛️ 네비게이션 버튼 배치 (가운데 빈 공간을 두어 버튼을 양옆으로 예쁘게 배치)
+# 🎛️ 네비게이션 버튼 배치
 col1, col2, col3 = st.columns([1, 1, 1])
 
+# 버튼을 누르면 위젯의 Key 값 자체(st.session_state.mbti_selector)를 덮어씌웁니다!
 with col1:
     if st.button("⬅️ 이전 유형 보기", use_container_width=True):
-        # 0에서 뒤로 가면 15(마지막)로 돌아가도록 설정 (무한 반복)
-        st.session_state.mbti_index = (st.session_state.mbti_index - 1) % 16
+        current_idx = mbti_types.index(st.session_state.mbti_selector)
+        st.session_state.mbti_selector = mbti_types[(current_idx - 1) % 16]
 
 with col3:
     if st.button("다음 유형 보기 ➡️", use_container_width=True):
-        # 15에서 앞으로 가면 0(처음)으로 돌아가도록 설정
-        st.session_state.mbti_index = (st.session_state.mbti_index + 1) % 16
+        current_idx = mbti_types.index(st.session_state.mbti_selector)
+        st.session_state.mbti_selector = mbti_types[(current_idx + 1) % 16]
 
-# 🎯 5. 사용자 입력 (드롭다운과 버튼 완벽 연동) 🎯
+# 🎯 5. 사용자 입력 🎯
+# 이제 index나 on_change 속성 없이 key만 넣으면 자동으로 동기화됩니다!
 selected_mbti = st.selectbox(
     "MBTI 16가지 유형", 
     mbti_types, 
-    index=st.session_state.mbti_index, # 버튼 누른 값이 여기에 바로 반영됨!
-    key="mbti_selector",               # 이 키값으로 위의 sync_index 함수와 연결됨
-    on_change=sync_index               # 직접 마우스로 선택하면 콜백 함수 실행
+    key="mbti_selector"
 )
-
 
 # 🎁 6. 결과 출력 🎁
 if selected_mbti:
